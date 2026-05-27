@@ -14,6 +14,7 @@ from re import compile
 from urllib.parse import urlparse
 from textwrap import dedent
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastmcp import FastMCP
 from typing import Annotated
@@ -692,6 +693,13 @@ class XHS:
             debug=self.VERSION_BETA,
             title="XHS-Downloader",
             version=__VERSION__,
+        )
+        api.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
         self.setup_routes(api)
         config = Config(
