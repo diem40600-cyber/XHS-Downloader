@@ -116,14 +116,14 @@ const response = await fetch('https://xhs-download-thehan.onrender.com/xhs/detai
             // 循环生成漂亮的卡片展示图片
             images.forEach((imgUrl, index) => {
                 // 🚀 利用大厂免费图片缓存服务，直接物理级融化小红书防盗链
-              const proxyUrl = `https://xhs-download-thehan.onrender.com/api/v1/download?url=${encodeURIComponent(imgUrl)}`;
+            const proxyUrl = imgUrl;
                 
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group relative";
                 card.innerHTML = `
-                    <img src="${proxyUrl}" class="w-full h-64 object-cover" alt="原图">
+                   <img src="${proxyUrl}" referrerpolicy="no-referrer" class="w-full h-64 object-cover" alt="原图">
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center space-x-3">
-                        <a href="${proxyUrl}" target="_blank" class="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">查看大图</a>
+                       <a href="${proxyUrl}" target="_blank" rel="noreferrer" class="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">查看大图</a>
                     </div>
                     <div class="p-2 text-center border-t border-gray-50">
                         <span class="text-xs text-gray-500 font-medium">第 ${index + 1} 张</span>
