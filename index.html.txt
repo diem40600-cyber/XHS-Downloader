@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书高清无水印图片提取助手</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .xhs-gradient {
+            background: linear-gradient(135deg, #ff2442 0%, #ff4d66 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <header class="xhs-gradient text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide">📕 XHS 图片去水印提取</h1>
+            <span class="text-xs bg-white/20 px-2 py-1 rounded-full">纯前端安全版</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
+            <label class="block text-gray-700 font-medium mb-3">请输入小红书分享链接：</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="xhsUrl" placeholder="例如：https://www.xiaohongshu.com/explore/..." 
+                       class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff2442] focus:border-transparent transition text-sm">
+                <button onclick="extractImages()" id="btnText" class="xhs-gradient text-white font-medium px-8 py-3 rounded-xl hover:opacity-90 active:scale-95 transition shadow-sm text-sm whitespace-nowrap">
+                    立即提取原图
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">提示：支持手机端复制的完整分享口令或纯网页链接。</p>
+        </div>
+
+        <div id="loading" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#ff2442] mb-3"></div>
+            <p class="text-gray-500 text-sm">正在破解小红书防爬机制，请稍候...</p>
+        </div>
+
+        <div id="resultSection" class="hidden">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                <h3 class="text-gray-800 font-semibold text-lg" id="noteTitle">提取结果</h3>
+                <span class="text-xs text-gray-500" id="authorName"></span>
+            </div>
+            
+            <div id="imageGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                </div>
+        </div>
+    </main>
+
+    <script>
+        async function extractImages() {
+            const urlInput = document.getElementById('xhsUrl').value.trim();
+            const loading = document.getElementById('loading');
+            const resultSection = document.getElementById('resultSection');
+            const imageGrid = document.getElementById('imageGrid');
+            const btnText = document.getElementById('btnText');
+
+            if (!urlInput) {
+                alert('请先粘贴一个小红书链接！');
+                return;
+            }
+
+            // 提取出真正的 URL 链接（兼容手机端带文字的分享口令）
+            const urlRegex = /(https?:\/\/[^\s]+)/;
+            const match = urlInput.match(urlRegex);
+            if (!match) {
+                alert('链接格式不正确，请重新输入！');
+                return;
+            }
+            const cleanUrl = match[0];
+
+            // 开启加载动画
+            loading.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+            imageGrid.innerHTML = '';
+            btnText.disabled = true;
+            btnText.style.opacity = 0.6;
+
+            try {
+                // 直接请求你在 Render 上刚刚部署成功的后端接口！
+                const response = await fetch('https://xhs-download-thehan.onrender.com/xhs/detail', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: cleanUrl,
+                        download: false,
+                        index: [],
+                        cookie: "",
+                        proxy: "",
+                        skip: false
+                    })
+                });
+
+                const resData = await response.json();
+
+                if (response.ok && resData.data) {
+                    const info = resData.data;
+                    
+                    // 填入标题和作者
+                    document.getElementById('noteTitle').innerText = info.作品标签 || '提取成功';
+                    document.getElementById('authorName').innerText = `作者: ${info.作者昵称 || '未知'}`;
+
+                    // 获取图片数组（兼容你接口返回的格式）
+                    const images = info.下载地址 || [];
+                    
+                    if (images.length === 0) {
+                        alert('未在这篇笔记中检测到图片！');
+                    } else {
+                        // 循环生成漂亮的卡片展示图片
+                        images.forEach((imgUrl, index) => {
+                            const card = document.createElement('div');
+                            card.className = "bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group relative";
+                            card.innerHTML = `
+                                <img src="${imgUrl}" class="w-full h-64 object-cover" alt="原图">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                    <a href="${imgUrl}" target="_blank" class="bg-white text-gray-800 text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-100 transition shadow">
+                                        查看大图
+                                    </a>
+                                </div>
+                                <div class="p-2 text-center border-t border-gray-50">
+                                    <span class="text-xs text-gray-500 font-medium">第 ${index + 1} 张</span>
+                                </div>
+                            `;
+                            imageGrid.appendChild(card);
+                        });
+                        resultSection.classList.remove('hidden');
+                    }
+                } else {
+                    alert('提取失败：' + (resData.message || '接口返回错误'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('网络连接失败，请检查 Render 后端是否正常响应！');
+            } finally {
+                loading.classList.add('hidden');
+                btnText.disabled = false;
+                btnText.style.opacity = 1;
+            }
+        }
+    </script>
+</body>
+</html>
