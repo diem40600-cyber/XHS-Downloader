@@ -724,17 +724,7 @@ class XHS:
         async def index():
             return RedirectResponse(url=REPOSITORY)
 
-@server.get("/api/v1/download")
-async def download_image(url: str):
-    import httpx
-     from fastapi.responses import StreamingResponse
-     async def stream_image():
-        async with httpx.AsyncClient() as client:
-             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-             async with client.stream("GET", url, headers=headers) as r:
-                async for chunk in r.aiter_bytes():
-                    yield chunk
-    return StreamingResponse(stream_image(), media_type="image/jpeg")
+
         @server.post(
             "/xhs/detail",
             summary=_("获取作品数据及下载地址"),
