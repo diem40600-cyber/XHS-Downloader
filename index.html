@@ -79,21 +79,23 @@
             btnText.style.opacity = 0.6;
 
             try {
-                // 直接请求你在 Render 上刚刚部署成功的后端接口！
-                const response = await fetch('https://xhs-download-thehan.onrender.com/xhs/detail/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        url: cleanUrl,
-                        download: false,
-                        index: [],
-                        cookie: "",
-                        proxy: "",
-                        skip: false
-                    })
-                });
+              // 核心请求：严格指向无斜杠地址，并加入防重定向机制
+const response = await fetch('https://xhs-download-thehan.onrender.com/xhs/detail', {
+    method: 'POST',
+    redirect: 'manual', // 强行关闭浏览器的自动重定向跟随，直接硬碰硬通信
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+        url: cleanUrl,
+        download: false,
+        index: [],
+        cookie: "",
+        proxy: "",
+        skip: false
+    })
+});
 
                 const resData = await response.json();
 
