@@ -110,33 +110,31 @@ const response = await fetch('https://xhs-download-thehan.onrender.com/xhs/detai
                     // 获取图片数组（兼容你接口返回的格式）
                     const images = info.下载地址 || [];
                     
-                    if (images.length === 0) {
-                        alert('未在这篇笔记中检测到图片！');
-                    } else {
-                        // 循环生成漂亮的卡片展示图片
-                     images.forEach((imgUrl, index) => {
-            // 🚀 核心绝杀：强行将小红书图片地址转为你的后端 Render 代理，彻底规避防盗链
-            const proxyUrl = `https://xhs-download-thehan.onrender.com/download?url=${encodeURIComponent(imgUrl)}`;
-            
-            const card = document.createElement('div');
-            card.className = "bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group relative";
-            card.innerHTML = `
-                <img src="${proxyUrl}" class="w-full h-64 object-cover" alt="原图">
-                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center space-x-3">
-                    <a href="${proxyUrl}" target="_blank" class="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">查看大图</a>
-                </div>
-                </div>
-                <div class="p-2 text-center border-t border-gray-50">
-                     <span class="text-xs text-gray-500 font-medium">第 ${index + 1} 张</span>
-                </div>
-              `;
-                            imageGrid.appendChild(card);
-                        });
-                        resultSection.classList.remove('hidden');
-                    }
-                } else {
-                    alert('提取失败：' + (resData.message || '接口返回错误'));
-                }
+                   if (images.length === 0) {
+            alert('未在这篇笔记中检测到图片！');
+        } else {
+            // 循环生成漂亮的卡片展示图片
+            images.forEach((imgUrl, index) => {
+                // 🚀 利用大厂免费图片缓存服务，直接物理级融化小红书防盗链
+                const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(imgUrl)}`;
+                
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group relative";
+                card.innerHTML = `
+                    <img src="${proxyUrl}" class="w-full h-64 object-cover" alt="原图">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center space-x-3">
+                        <a href="${proxyUrl}" target="_blank" class="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">查看大图</a>
+                    </div>
+                    <div class="p-2 text-center border-t border-gray-50">
+                        <span class="text-xs text-gray-500 font-medium">第 ${index + 1} 张</span>
+                    </div>
+                `;
+                
+                imageGrid.appendChild(card);
+            });
+
+            resultSection.classList.remove('hidden');
+        }
             } catch (error) {
                 console.error(error);
                 alert('网络连接失败，请检查 Render 后端是否正常响应！');
